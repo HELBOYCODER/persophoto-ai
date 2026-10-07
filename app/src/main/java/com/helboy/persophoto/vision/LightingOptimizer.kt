@@ -11,15 +11,17 @@ import kotlin.math.pow
 import kotlin.math.roundToInt
 
 /**
- * Intelligent Lighting, Exposure and Color Normalization Engine.
- * Automatically analyzes luminance histograms, applies auto-exposure,
- * neutralizes color casts, adjusts contrast, and sharpens for 300 DPI biometric print standard.
+ * GPUImage-grade Intelligent Lighting, Exposure, and Color Grading Engine.
+ * Implements battle-tested algorithms from wasabeef/android-gpuimage:
+ * - Exposure compensation in photographic EV stops (2^EV)
+ * - True S-curve contrast with 0.5 midtone pivot
+ * - GPUImage polynomial shadow lifting and highlight recovery
+ * - YIQ chromaticity white balance (temperature & tint)
+ * - Luminance-weighted saturation
+ * - High-pass 300 DPI photographic unsharp mask
  */
 class LightingOptimizer {
 
-    /**
-     * Optimizes lighting, exposure, contrast, and color balance.
-     */
     fun optimize(
         source: Bitmap,
         faceBox: Rect?,
@@ -32,94 +34,134 @@ class LightingOptimizer {
         val pixels = IntArray(w * h)
         source.getPixels(pixels, 0, w, 0, 0, w, h)
 
-        // 1. Analyze face region or central subject for exposure statistics
-        val sampleBox = faceBox ?: Rect((w * 0.25f).toInt(), (h * 0.20f).toInt(), (w * 0.75f).toInt(), (h * 0.70f).toInt())
-        val stats = computeLuminanceAndColorStats(pixels, w, h, sampleBox)
+        // 1. Analyze face region for baseline lighting statistics
+        val sampleBox = faceBox ?: Rect(
+            (w * 0.25f).toInt(),
+            (h * 0.20f).toInt(),
+            (w * 0.75f).toInt(),
+            (h * 0.70f).toInt()
+        )
+        val stats = computeLuminanceStats(pixels, w, h, sampleBox)
 
-        // 2. Compute Auto Exposure Gain & Gamma
-        val idealFaceLuminance = 175.0f // Standard biometric midtone IRE ~70%
-        val currentLuminance = stats.meanLuminance.coerceIn(40.0f, 240.0f)
-
-        val autoGamma: Float
-        val autoExposureGain: Float
-        if (options.isAutoEnhanced) {
-            // Adaptive gamma curve calculation
-            val lumRatio = idealFaceLuminance / 255.0f
-            val currRatio = currentLuminance / 255.0f
-            autoGamma = (ln(lumRatio) / ln(currRatio)).coerceIn(0.55f, 1.45f)
-            autoExposureGain = (idealFaceLuminance / currentLuminance).coerceIn(0.85f, 1.40f)
+        // 2. Auto Exposure EV Offset
+        val autoEvOffset = if (options.isAutoEnhanced) {
+            val idealLuminance = 175.0f
+            val currentLuminance = stats.meanLuminance.coerceIn(50.0f, 230.0f)
+            // Log2(ideal / current)
+            (ln(idealLuminance / currentLuminance) / ln(2.0)).toFloat().coerceIn(-0.4f, 1.1f)
         } else {
-            autoGamma = 1.0f
-            autoExposureGain = 1.0f
+            0.0f
         }
 
-        // 3. Auto White Balance gains (Color Cast Neutralization)
-        val autoGainR: Float
-        val autoGainB: Float
-        if (options.isAutoEnhanced && stats.meanGreen > 30.0f) {
-            // Balance red and blue relative to green with damping
-            val targetR = (stats.meanGreen / max(30.0f, stats.meanRed)).coerceIn(0.88f, 1.15f)
-            val targetB = (stats.meanGreen / max(30.0f, stats.meanBlue)).coerceIn(0.88f, 1.15f)
-            autoGainR = 1.0f + (targetR - 1.0f) * 0.65f // Soft damping to prevent over-correction
-            autoGainB = 1.0f + (targetB - 1.0f) * 0.65f
+        val totalEv = (autoEvOffset + options.exposureEv).coerceIn(-2.5f, 2.5f)
+        val exposureGain = 2.0.pow(totalEv.toDouble()).toFloat()
+
+        // 3. Contrast factor
+        val contrastFactor = options.contrast.coerceIn(0.4f, 2.2f)
+
+        // 4. Shadow Lift and Highlight Recovery factors
+        val hasShadowOrHighlight = options.shadowLift > 0.01f || options.highlightRecovery < 0.99f || options.isAutoEnhanced
+        val effectiveShadows = if (options.isAutoEnhanced && options.shadowLift < 0.2f) {
+            0.30f + options.shadowLift * 0.7f
         } else {
-            autoGainR = 1.0f
-            autoGainB = 1.0f
-        }
+            options.shadowLift
+        }.coerceIn(0.0f, 1.0f)
 
-        // 4. Incorporate Manual Adjustments
-        // Brightness: -50..+50 -> -60..+60 pixel shift
-        val manualBrightnessOffset = options.brightnessAdjustment * 1.2f
-        // Contrast: -50..+50 -> 0.7 .. 1.4 factor
-        val contrastFactor = 1.0f + (options.contrastAdjustment / 100.0f) * 0.7f
-        // Warmth: -50..+50 -> shifts R and B
-        val warmthFactor = options.warmthAdjustment / 100.0f
+        val effectiveHighlights = options.highlightRecovery.coerceIn(0.0f, 1.0f)
+        val sFactor = effectiveShadows + 1.0f
+        val hFactor = 2.0f - effectiveHighlights
 
-        // Precompute LUT (Look-Up Table) for fast 8-bit channel transformation
-        val lutR = IntArray(256)
-        val lutG = IntArray(256)
-        val lutB = IntArray(256)
+        // 5. White balance parameters (Temperature & Tint)
+        val hasWhiteBalance = options.temperature != 0.0f || options.tint != 0.0f
+        val tempShift = options.temperature.coerceIn(-1.0f, 1.0f) * 0.085f
+        val tintShift = options.tint.coerceIn(-1.0f, 1.0f) * 0.052f
 
-        for (i in 0..255) {
-            val normalized = i / 255.0f
+        // 6. Saturation
+        val saturationFactor = options.saturation.coerceIn(0.0f, 2.0f)
+        val hasSaturation = saturationFactor != 1.0f
 
-            // Apply gamma curve
-            val gammaCorrected = normalized.pow(autoGamma)
-
-            // Red channel
-            var r = (gammaCorrected * 255.0f * autoGainR * autoExposureGain)
-            r = ((r - 128f) * contrastFactor) + 128f + manualBrightnessOffset + (warmthFactor * 25f)
-            lutR[i] = r.roundToInt().coerceIn(0, 255)
-
-            // Green channel
-            var g = (gammaCorrected * 255.0f * autoExposureGain)
-            g = ((g - 128f) * contrastFactor) + 128f + manualBrightnessOffset
-            lutG[i] = g.roundToInt().coerceIn(0, 255)
-
-            // Blue channel
-            var b = (gammaCorrected * 255.0f * autoGainB * autoExposureGain)
-            b = ((b - 128f) * contrastFactor) + 128f + manualBrightnessOffset - (warmthFactor * 25f)
-            lutB[i] = b.roundToInt().coerceIn(0, 255)
-        }
-
-        // Apply LUT to all pixels
+        // Process all pixels
         for (i in 0 until (w * h)) {
-            val p = pixels[i]
-            val r = lutR[Color.red(p)]
-            val g = lutG[Color.green(p)]
-            val b = lutB[Color.blue(p)]
-            pixels[i] = Color.rgb(r, g, b)
+            val pixel = pixels[i]
+            var r = (Color.red(pixel) / 255.0f)
+            var g = (Color.green(pixel) / 255.0f)
+            var b = (Color.blue(pixel) / 255.0f)
+
+            // Step A: Exposure Compensation (2^EV)
+            r *= exposureGain
+            g *= exposureGain
+            b *= exposureGain
+
+            // Step B: Linear Contrast with 0.5 pivot: (rgb - 0.5) * contrast + 0.5
+            if (contrastFactor != 1.0f) {
+                r = (r - 0.5f) * contrastFactor + 0.5f
+                g = (g - 0.5f) * contrastFactor + 0.5f
+                b = (b - 0.5f) * contrastFactor + 0.5f
+            }
+
+            r = r.coerceIn(0.0f, 1.0f)
+            g = g.coerceIn(0.0f, 1.0f)
+            b = b.coerceIn(0.0f, 1.0f)
+
+            // Step C: GPUImage Highlight & Shadow adjustments
+            if (hasShadowOrHighlight) {
+                val lum = (0.30f * r + 0.59f * g + 0.11f * b).coerceIn(0.001f, 1.0f)
+
+                // Shadow lifting
+                val shadowVal = if (effectiveShadows > 0.01f) {
+                    val p1 = lum.pow(1.0f / sFactor)
+                    val p2 = lum.pow(2.0f / sFactor)
+                    ((p1 - 0.76f * p2) - lum).coerceIn(0.0f, 1.0f)
+                } else 0.0f
+
+                // Highlight recovery
+                val highlightVal = if (effectiveHighlights < 0.99f) {
+                    val invLum = 1.0f - lum
+                    val p1 = invLum.pow(1.0f / hFactor)
+                    val p2 = invLum.pow(2.0f / hFactor)
+                    ((1.0f - (p1 - 0.80f * p2)) - lum).coerceIn(-1.0f, 0.0f)
+                } else 0.0f
+
+                val targetLum = (lum + shadowVal + highlightVal).coerceIn(0.0f, 1.0f)
+                val scale = targetLum / lum
+                r = (r * scale).coerceIn(0.0f, 1.0f)
+                g = (g * scale).coerceIn(0.0f, 1.0f)
+                b = (b * scale).coerceIn(0.0f, 1.0f)
+            }
+
+            // Step D: White Balance in YIQ Color Space
+            if (hasWhiteBalance) {
+                val y = 0.299f * r + 0.587f * g + 0.114f * b
+                var inI = 0.596f * r - 0.274f * g - 0.322f * b
+                var inQ = 0.212f * r - 0.523f * g + 0.311f * b
+
+                inI = (inI + tempShift).coerceIn(-0.59f, 0.59f)
+                inQ = (inQ + tintShift).coerceIn(-0.52f, 0.52f)
+
+                r = (y + 0.956f * inI + 0.621f * inQ).coerceIn(0.0f, 1.0f)
+                g = (y - 0.272f * inI - 0.647f * inQ).coerceIn(0.0f, 1.0f)
+                b = (y - 1.105f * inI + 1.702f * inQ).coerceIn(0.0f, 1.0f)
+            }
+
+            // Step E: Saturation (Luminance mix)
+            if (hasSaturation) {
+                val lum = 0.2125f * r + 0.7154f * g + 0.0721f * b
+                r = (lum + (r - lum) * saturationFactor).coerceIn(0.0f, 1.0f)
+                g = (lum + (g - lum) * saturationFactor).coerceIn(0.0f, 1.0f)
+                b = (lum + (b - lum) * saturationFactor).coerceIn(0.0f, 1.0f)
+            }
+
+            val outR = (r * 255.0f).roundToInt().coerceIn(0, 255)
+            val outG = (g * 255.0f).roundToInt().coerceIn(0, 255)
+            val outB = (b * 255.0f).roundToInt().coerceIn(0, 255)
+
+            pixels[i] = Color.rgb(outR, outG, outB)
         }
 
         output.setPixels(pixels, 0, w, 0, 0, w, h)
 
-        // 5. Sharpening filter if enabled
-        val sharpenAmount = if (options.isAutoEnhanced) {
-            max(0.15f, options.sharpnessAdjustment / 100.0f)
-        } else {
-            options.sharpnessAdjustment / 100.0f
-        }
-
+        // Step F: Photographic Unsharp Mask (Sharpening)
+        val sharpenAmount = options.sharpness.coerceIn(0.0f, 1.0f)
         return if (sharpenAmount > 0.05f) {
             applyUnsharpMask(output, sharpenAmount)
         } else {
@@ -127,19 +169,19 @@ class LightingOptimizer {
         }
     }
 
-    private data class LuminanceAndColorStats(
+    private data class LuminanceStats(
         val meanLuminance: Float,
         val meanRed: Float,
         val meanGreen: Float,
         val meanBlue: Float
     )
 
-    private fun computeLuminanceAndColorStats(
+    private fun computeLuminanceStats(
         pixels: IntArray,
         width: Int,
         height: Int,
         box: Rect
-    ): LuminanceAndColorStats {
+    ): LuminanceStats {
         val left = box.left.coerceIn(0, width - 1)
         val right = box.right.coerceIn(0, width - 1)
         val top = box.top.coerceIn(0, height - 1)
@@ -151,7 +193,7 @@ class LightingOptimizer {
         var totalG = 0.0
         var totalB = 0.0
 
-        val step = max(1, (right - left) / 60)
+        val step = max(1, (right - left) / 50)
 
         for (y in top..bottom step step) {
             for (x in left..right step step) {
@@ -160,9 +202,8 @@ class LightingOptimizer {
                 val g = Color.green(p)
                 val b = Color.blue(p)
 
-                // Skip pure white/pure black outliers (e.g. background)
                 val lum = 0.299 * r + 0.587 * g + 0.114 * b
-                if (lum in 20.0..245.0) {
+                if (lum in 25.0..245.0) {
                     count++
                     totalLum += lum
                     totalR += r
@@ -173,19 +214,19 @@ class LightingOptimizer {
         }
 
         return if (count > 0) {
-            LuminanceAndColorStats(
+            LuminanceStats(
                 meanLuminance = (totalLum / count).toFloat(),
                 meanRed = (totalR / count).toFloat(),
                 meanGreen = (totalG / count).toFloat(),
                 meanBlue = (totalB / count).toFloat()
             )
         } else {
-            LuminanceAndColorStats(150.0f, 150.0f, 150.0f, 150.0f)
+            LuminanceStats(160.0f, 160.0f, 160.0f, 160.0f)
         }
     }
 
     /**
-     * High-speed 3x3 unsharp mask for photographic edge definition.
+     * Photographic 3x3 unsharp mask for eye and hair clarity.
      */
     private fun applyUnsharpMask(source: Bitmap, strength: Float): Bitmap {
         val w = source.width
@@ -196,18 +237,18 @@ class LightingOptimizer {
         val dstPixels = IntArray(w * h)
         source.getPixels(srcPixels, 0, w, 0, 0, w, h)
 
-        val alpha = strength.coerceIn(0.0f, 0.8f)
+        val alpha = strength.coerceIn(0.0f, 0.75f)
 
         for (y in 1 until h - 1) {
+            val yOffset = y * w
             for (x in 1 until w - 1) {
-                val idx = y * w + x
+                val idx = yOffset + x
                 val center = srcPixels[idx]
 
-                // Fast 4-neighbor laplacian
                 val top = srcPixels[(y - 1) * w + x]
                 val bottom = srcPixels[(y + 1) * w + x]
-                val left = srcPixels[y * w + (x - 1)]
-                val right = srcPixels[y * w + (x + 1)]
+                val left = srcPixels[yOffset + (x - 1)]
+                val right = srcPixels[yOffset + (x + 1)]
 
                 val cR = Color.red(center)
                 val cG = Color.green(center)

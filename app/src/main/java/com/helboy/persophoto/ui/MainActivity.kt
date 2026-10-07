@@ -203,13 +203,12 @@ class MainActivity : ComponentActivity() {
                         triggerProcessing(newOpts, null)
                     },
                     onAutoEnhanceClick = {
-                        val enhanced = options.copy(
+                        val enhanced = com.helboy.persophoto.data.PhotoProcessingOptions.fromPreset(
+                            com.helboy.persophoto.data.StudioColorPreset.BALANCED_STUDIO,
+                            options.standard
+                        ).copy(
                             isAutoEnhanced = true,
                             backgroundOption = com.helboy.persophoto.data.BackgroundColorOption.PURE_WHITE,
-                            brightnessAdjustment = 0f,
-                            contrastAdjustment = 0f,
-                            warmthAdjustment = 0f,
-                            sharpnessAdjustment = 25f,
                             zoomScale = 1.0f
                         )
                         options = enhanced

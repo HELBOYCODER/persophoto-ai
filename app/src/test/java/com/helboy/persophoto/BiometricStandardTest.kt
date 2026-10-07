@@ -71,4 +71,17 @@ class BiometricStandardTest {
         assertTrue(lottery.minFaceHeightRatio >= 0.50f)
         assertTrue(lottery.maxFaceHeightRatio <= 0.69f)
     }
+
+    @Test
+    fun testStudioColorPresets() {
+        for (preset in com.helboy.persophoto.data.StudioColorPreset.entries) {
+            val opts = com.helboy.persophoto.data.PhotoProcessingOptions.fromPreset(preset)
+            assertTrue("Exposure should be in realistic EV range", opts.exposureEv in -2.0f..2.0f)
+            assertTrue("Contrast should be positive", opts.contrast in 0.5f..2.0f)
+            assertTrue("Shadow lift should be between 0 and 1", opts.shadowLift in 0.0f..1.0f)
+            assertTrue("Highlight recovery should be between 0 and 1", opts.highlightRecovery in 0.0f..1.0f)
+            assertTrue("Saturation should be non-negative", opts.saturation in 0.0f..2.0f)
+            assertTrue("Sharpness should be between 0 and 1", opts.sharpness in 0.0f..1.0f)
+        }
+    }
 }

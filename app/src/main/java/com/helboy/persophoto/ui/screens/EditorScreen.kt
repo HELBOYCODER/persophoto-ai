@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,19 +26,18 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Crop
-import androidx.compose.material.icons.filled.FormatColorFill
 import androidx.compose.material.icons.filled.Print
-import androidx.compose.material.icons.filled.Tune
-import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
@@ -61,6 +61,7 @@ import androidx.compose.ui.unit.sp
 import com.helboy.persophoto.data.BackgroundColorOption
 import com.helboy.persophoto.data.BiometricStandard
 import com.helboy.persophoto.data.PhotoProcessingOptions
+import com.helboy.persophoto.data.StudioColorPreset
 import com.helboy.persophoto.ui.components.BiometricGuideOverlay
 import com.helboy.persophoto.ui.components.LabeledSlider
 import com.helboy.persophoto.ui.components.StandardSelector
@@ -74,6 +75,7 @@ import com.helboy.persophoto.ui.theme.TextMuted
 import com.helboy.persophoto.ui.theme.TextPrimary
 import com.helboy.persophoto.ui.theme.TextSecondary
 import com.helboy.persophoto.vision.ProcessedPhotoResult
+import java.util.Locale
 
 @Composable
 fun EditorScreen(
@@ -86,7 +88,7 @@ fun EditorScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var selectedTab by remember { mutableIntStateOf(0) }
+    var selectedTab by remember { mutableIntStateOf(2) } // Default to Lighting & Color tab
     var showBiometricOverlay by remember { mutableStateOf(false) }
 
     Column(
@@ -98,7 +100,7 @@ fun EditorScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 10.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -147,7 +149,7 @@ fun EditorScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .padding(horizontal = 20.dp, vertical = 8.dp),
+                .padding(horizontal = 16.dp, vertical = 4.dp),
             contentAlignment = Alignment.Center
         ) {
             if (currentResult != null) {
@@ -163,7 +165,7 @@ fun EditorScreen(
                         bitmap = bitmap.asImageBitmap(),
                         contentDescription = "پیش‌نمایش عکس پرسنلی",
                         contentScale = ContentScale.Fit,
-                        modifier = Modifier.fillMaxSize(0.92f)
+                        modifier = Modifier.fillMaxSize(0.94f)
                     )
 
                     if (showBiometricOverlay) {
@@ -179,16 +181,16 @@ fun EditorScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color(0xAA0D1117)),
+                        .background(Color(0x990D1117)),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         CircularProgressIndicator(color = StudioCyanPrimary)
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "در حال پردازش هوشمند...",
+                            text = "در حال پردازش رنگ و نور استودیویی...",
                             color = StudioCyanPrimary,
-                            fontSize = 13.sp,
+                            fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -196,38 +198,61 @@ fun EditorScreen(
             }
         }
 
-        // 3. One-Tap Smart Auto Fix Banner & Compliance Feedback
+        // 3. Quick Action Row
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Auto Enhance Button
             Button(
                 onClick = onAutoEnhanceClick,
                 colors = ButtonDefaults.buttonColors(containerColor = StudioCyanPrimary),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.weight(1f)
+                shape = RoundedCornerShape(10.dp),
+                modifier = Modifier.weight(1f).height(40.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.AutoAwesome,
                     contentDescription = null,
                     tint = StudioDarkBg,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "بهینه‌سازی هوشمند (سفید کردن + نور)",
+                    text = "بهینه‌سازی هوشمند (تک‌کلیک)",
                     color = StudioDarkBg,
                     fontWeight = FontWeight.Bold,
                     fontSize = 12.sp
                 )
             }
+
+            OutlinedButton(
+                onClick = {
+                    onOptionsChanged(
+                        PhotoProcessingOptions.fromPreset(
+                            StudioColorPreset.BALANCED_STUDIO,
+                            options.standard
+                        )
+                    )
+                },
+                shape = RoundedCornerShape(10.dp),
+                border = ButtonDefaults.outlinedButtonBorder.copy(
+                    brush = androidx.compose.ui.graphics.SolidColor(StudioCardBorder)
+                ),
+                modifier = Modifier.height(40.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = "ریست",
+                    tint = TextSecondary,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
         }
 
         // 4. Tab Navigation (قالب، پس‌زمینه، نور و رنگ، کادر)
-        val tabTitles = listOf("قالب ابعاد", "پس‌زمینه", "نور و رنگ", "کادر و زوم")
+        val tabTitles = listOf("قالب ابعاد", "پس‌زمینه", "نور و رنگ استودیویی", "کادر و زوم")
         TabRow(
             selectedTabIndex = selectedTab,
             containerColor = StudioSurface,
@@ -255,13 +280,13 @@ fun EditorScreen(
             }
         }
 
-        // 5. Tab Content Panel
+        // 5. Tab Content Panel (Spacious & Scrollable)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(140.dp)
+                .height(205.dp)
                 .background(StudioSurfaceVariant)
-                .padding(vertical = 8.dp)
+                .padding(vertical = 6.dp)
         ) {
             when (selectedTab) {
                 // 0: Presets
@@ -300,7 +325,7 @@ fun EditorScreen(
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .size(34.dp)
+                                        .size(36.dp)
                                         .clip(CircleShape)
                                         .background(
                                             if (bgOpt == BackgroundColorOption.ORIGINAL) StudioCardBorder
@@ -319,32 +344,141 @@ fun EditorScreen(
                     }
                 }
 
-                // 2: Lighting & Color Sliders
+                // 2: Lighting & Color Sliders (GPUImage-Grade)
                 2 -> {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(horizontal = 16.dp)
+                            .padding(horizontal = 14.dp)
                             .verticalScroll(rememberScrollState()),
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
+                        // Quick Studio Presets Row
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+                        ) {
+                            items(StudioColorPreset.entries) { preset ->
+                                val isPresetActive = options.activePreset == preset
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .background(if (isPresetActive) StudioCyanPrimary else StudioSurface)
+                                        .border(
+                                            1.dp,
+                                            if (isPresetActive) StudioCyanPrimary else StudioCardBorder,
+                                            RoundedCornerShape(16.dp)
+                                        )
+                                        .clickable {
+                                            val newOptions = PhotoProcessingOptions.fromPreset(preset, options.standard)
+                                                .copy(backgroundOption = options.backgroundOption)
+                                            onOptionsChanged(newOptions)
+                                        }
+                                        .padding(horizontal = 10.dp, vertical = 5.dp)
+                                ) {
+                                    Text(
+                                        text = preset.nameFa,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isPresetActive) StudioDarkBg else TextPrimary
+                                    )
+                                }
+                            }
+                        }
+
+                        // 1. Photographic Exposure (EV stops)
                         LabeledSlider(
-                            label = "روشنایی (Brightness)",
-                            value = options.brightnessAdjustment,
-                            onValueChange = { onOptionsChanged(options.copy(brightnessAdjustment = it)) },
-                            valueRange = -40f..40f
+                            label = "نوردهی عکاسی (Exposure EV)",
+                            value = options.exposureEv,
+                            onValueChange = {
+                                onOptionsChanged(options.copy(exposureEv = it, activePreset = StudioColorPreset.CUSTOM))
+                            },
+                            valueRange = -1.5f..1.5f,
+                            valueFormatter = {
+                                String.format(Locale.US, "%+.2f EV", it)
+                            }
                         )
+
+                        // 2. Linear Contrast
                         LabeledSlider(
                             label = "کنتراست (Contrast)",
-                            value = options.contrastAdjustment,
-                            onValueChange = { onOptionsChanged(options.copy(contrastAdjustment = it)) },
-                            valueRange = -40f..40f
+                            value = options.contrast,
+                            onValueChange = {
+                                onOptionsChanged(options.copy(contrast = it, activePreset = StudioColorPreset.CUSTOM))
+                            },
+                            valueRange = 0.6f..1.6f,
+                            valueFormatter = {
+                                String.format(Locale.US, "%.2f×", it)
+                            }
                         )
+
+                        // 3. GPUImage Shadow Lift (Lifting dark neck shadows)
                         LabeledSlider(
-                            label = "دمای رنگ (گرم / سرد)",
-                            value = options.warmthAdjustment,
-                            onValueChange = { onOptionsChanged(options.copy(warmthAdjustment = it)) },
-                            valueRange = -30f..30f
+                            label = "روشن‌سازی سایه‌ها (Shadow Lift)",
+                            value = options.shadowLift,
+                            onValueChange = {
+                                onOptionsChanged(options.copy(shadowLift = it, activePreset = StudioColorPreset.CUSTOM))
+                            },
+                            valueRange = 0.0f..1.0f,
+                            valueFormatter = {
+                                String.format(Locale.US, "+%d%%", (it * 100).toInt())
+                            }
+                        )
+
+                        // 4. Highlight Recovery (Control blown-out flash)
+                        LabeledSlider(
+                            label = "کنترل هایلایت‌ها (Highlight Recovery)",
+                            value = options.highlightRecovery,
+                            onValueChange = {
+                                onOptionsChanged(options.copy(highlightRecovery = it, activePreset = StudioColorPreset.CUSTOM))
+                            },
+                            valueRange = 0.3f..1.0f,
+                            valueFormatter = {
+                                String.format(Locale.US, "%d%%", (it * 100).toInt())
+                            }
+                        )
+
+                        // 5. YIQ Color Temperature (Cool vs Warm)
+                        LabeledSlider(
+                            label = "دمای رنگ (سرد / گرم)",
+                            value = options.temperature,
+                            onValueChange = {
+                                onOptionsChanged(options.copy(temperature = it, activePreset = StudioColorPreset.CUSTOM))
+                            },
+                            valueRange = -0.5f..0.5f,
+                            valueFormatter = {
+                                when {
+                                    it < -0.05f -> String.format(Locale.US, "سرد (%d%%)", (-it * 200).toInt())
+                                    it > 0.05f -> String.format(Locale.US, "گرم (+%d%%)", (it * 200).toInt())
+                                    else -> "طبیعی (0)"
+                                }
+                            }
+                        )
+
+                        // 6. Saturation
+                        LabeledSlider(
+                            label = "شادابی و غلظت رنگ (Saturation)",
+                            value = options.saturation,
+                            onValueChange = {
+                                onOptionsChanged(options.copy(saturation = it, activePreset = StudioColorPreset.CUSTOM))
+                            },
+                            valueRange = 0.5f..1.6f,
+                            valueFormatter = {
+                                String.format(Locale.US, "%.2f×", it)
+                            }
+                        )
+
+                        // 7. 300 DPI Photographic Sharpening (Unsharp Mask)
+                        LabeledSlider(
+                            label = "وضوح و شارپنس مو و چشم (Sharpness)",
+                            value = options.sharpness,
+                            onValueChange = {
+                                onOptionsChanged(options.copy(sharpness = it, activePreset = StudioColorPreset.CUSTOM))
+                            },
+                            valueRange = 0.0f..0.8f,
+                            valueFormatter = {
+                                String.format(Locale.US, "%d%%", (it * 100).toInt())
+                            }
                         )
                     }
                 }
@@ -354,7 +488,7 @@ fun EditorScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(horizontal = 16.dp),
+                            .padding(horizontal = 14.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         LabeledSlider(
@@ -362,7 +496,7 @@ fun EditorScreen(
                             value = options.zoomScale,
                             onValueChange = { onOptionsChanged(options.copy(zoomScale = it)) },
                             valueRange = 0.85f..1.35f,
-                            valueFormatter = { String.format("%.2f×", it) }
+                            valueFormatter = { String.format(Locale.US, "%.2f×", it) }
                         )
                         LabeledSlider(
                             label = "تراز چرخش (Rotation)",
@@ -380,7 +514,7 @@ fun EditorScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(horizontal = 16.dp, vertical = 10.dp)
         ) {
             Button(
                 onClick = onProceedToPrint,
@@ -388,7 +522,7 @@ fun EditorScreen(
                 shape = RoundedCornerShape(14.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp)
+                    .height(50.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Print,
@@ -400,7 +534,7 @@ fun EditorScreen(
                     text = "مرحله بعد: طرح‌بندی چاپ ۶ و ۱۲ تایی (عکس و PDF)",
                     color = StudioDarkBg,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp
+                    fontSize = 13.sp
                 )
             }
         }
