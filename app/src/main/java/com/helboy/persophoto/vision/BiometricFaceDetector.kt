@@ -40,7 +40,7 @@ class BiometricFaceDetector {
     private val mlKitDetector by lazy {
         val options = FaceDetectorOptions.Builder()
             .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
-            .setLandmarkMode(FaceLandmark.LANDMARK_LEFT_EYE or FaceLandmark.LANDMARK_RIGHT_EYE or FaceLandmark.LANDMARK_NOSE_BASE)
+            .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_ALL)
             .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_NONE)
             .setMinFaceSize(0.15f)
             .build()

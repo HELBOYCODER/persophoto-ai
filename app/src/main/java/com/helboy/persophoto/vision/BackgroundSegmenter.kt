@@ -19,7 +19,7 @@ class BackgroundSegmenter {
 
     private val selfieSegmenter by lazy {
         val options = SelfieSegmenterOptions.Builder()
-            .setDeliveryMode(SelfieSegmenterOptions.SINGLE_IMAGE_MODE)
+            .setDetectorMode(SelfieSegmenterOptions.SINGLE_IMAGE_MODE)
             .enableRawSizeMask()
             .build()
         Segmentation.getClient(options)
