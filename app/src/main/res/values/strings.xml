@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PersoPhoto AI</string>
+    <string name="app_tagline">استودیو هوشمند عکس پرسنلی، پاسپورت و لاتاری</string>
+
+    <!-- Standards -->
+    <string name="std_iran_3x4">۳×۴ سانتی‌متر (ایران)</string>
+    <string name="std_iran_3x4_desc">شناسنامه، کارت ملی، گواهینامه و مدارک اداری</string>
+    <string name="std_icao_passport">پاسپورت استاندارد (ICAO)</string>
+    <string name="std_icao_passport_desc">۳.۵×۴.۵ سانتی‌متر - گذرنامه بین‌المللی</string>
+    <string name="std_us_lottery">لاتاری و ویزای آمریکا (DV)</string>
+    <string name="std_us_lottery_desc">۵×۵ سانتی‌متر (۲×۲ اینچ) - کادر مربعی دقیق</string>
+    <string name="std_schengen">ویزای شنگن (اروپا)</string>
+    <string name="std_schengen_desc">۳.۵×۴.۵ سانتی‌متر با پوشش ۷۰ تا ۸۰ درصد چهره</string>
+    <string name="std_canada">ویزای کانادا</string>
+    <string name="std_canada_desc">۵×۷ سانتی‌متر</string>
+    <string name="std_4x6">عکس ۴×۶ سانتی‌متر</string>
+    <string name="std_4x6_desc">عکس پرسنلی بزرگ و فرم‌های سازمانی</string>
+
+    <!-- Home -->
+    <string name="btn_take_photo">عکاسی با دوربین هوشمند</string>
+    <string name="btn_take_photo_desc">دارای راهنمای بیضی صورت و تراز چشم</string>
+    <string name="btn_pick_gallery">انتخاب از گالری</string>
+    <string name="btn_pick_gallery_desc">بارگذاری عکس موجود و تبدیل آنی به پرسنلی</string>
+    <string name="home_standards_title">استانداردهای بیومتریک و پرسنلی</string>
+
+    <!-- Camera -->
+    <string name="camera_guide_text">سر خود را داخل کادر بیضی قرار دهید و مستقیم نگاه کنید</string>
+    <string name="camera_lighting_good">نور محیط مناسب است ✓</string>
+    <string name="camera_lighting_dark">محیط کمی تاریک است ⚠️</string>
+    <string name="camera_switch">تغییر دوربین</string>
+    <string name="camera_capture">ثبت عکس</string>
+
+    <!-- Editor -->
+    <string name="editor_auto_enhance">بهینه‌سازی هوشمند (تک‌کلیک)</string>
+    <string name="editor_auto_enhance_desc">حذف پس‌زمینه + تصحیح نور و رنگ + کادربندی استاندارد</string>
+    <string name="editor_tab_standard">قالب ابعاد</string>
+    <string name="editor_tab_bg">پس‌زمینه</string>
+    <string name="editor_tab_lighting">نور و رنگ</string>
+    <string name="editor_tab_crop">تنظیم کادر</string>
+
+    <string name="bg_white">سفید خالص (#FFF)</string>
+    <string name="bg_light_blue">آبی کم‌رنگ</string>
+    <string name="bg_light_gray">خاکستری روشن</string>
+    <string name="bg_original">تصویر اصلی</string>
+
+    <string name="param_brightness">روشنایی</string>
+    <string name="param_contrast">کنتراست</string>
+    <string name="param_warmth">دمای رنگ (گرمی)</string>
+    <string name="param_sharpen">وضوح و شفافیت</string>
+
+    <!-- Print & Export -->
+    <string name="print_title">طرح‌بندی و چاپ عکس</string>
+    <string name="sheet_single">تک عکس مستقل</string>
+    <string name="sheet_6_pack">برگه ۶ تایی (کاغذ ۱۰×۱۵ سانت)</string>
+    <string name="sheet_6_pack_desc">کاغذ استاندارد لابراتوار ۴×۶ اینچ - ۶ قطعه</string>
+    <string name="sheet_12_pack">برگه ۱۲ تایی (کاغذ ۱۳×۱۸ یا A4)</string>
+    <string name="sheet_12_pack_desc">مناسب صرفه‌جویی و چاپ تعداد بالا - ۱۲ قطعه</string>
+    <string name="sheet_a4">برگه کامل A4 (چاپ انبوه)</string>
+
+    <string name="cut_lines_toggle">نمایش خطوط راهنمای برش (قیچی)</string>
+    <string name="export_btn_image">ذخیره عکس چاپی (Ultra 300 DPI JPG)</string>
+    <string name="export_btn_pdf">ایجاد فایل PDF چاپی (اندازه ۱:۱)</string>
+    <string name="export_btn_share">اشتراک‌گذاری فایل</string>
+
+    <!-- Status -->
+    <string name="processing">در حال پردازش هوشمند تصویر...</string>
+    <string name="exporting">در حال ایجاد فایل با کیفیت عالی...</string>
+    <string name="export_success">فایل با موفقیت ذخیره شد!</string>
+    <string name="permission_camera_title">دسترسی به دوربین نیاز است</string>
+    <string name="permission_camera_desc">برای عکاسی مستقیم و کادربندی پرسنلی، لطفاً دسترسی دوربین را تأیید کنید.</string>
+</resources>

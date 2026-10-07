@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Pure White Biometric Photo Card -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:strokeColor="#00D2B4"
+        android:strokeWidth="1.5"
+        android:pathData="M32,22 h44 a6,6 0 0,1 6,6 v52 a6,6 0 0,1 -6,6 h-44 a6,6 0 0,1 -6,-6 v-52 a6,6 0 0,1 6,-6 z" />
+
+    <!-- Head Portrait Silhouette inside White Card -->
+    <path
+        android:fillColor="#1E293B"
+        android:pathData="M54,42m-10,0a10,10 0,1,1 20,0a10,10 0,1,1 -20,0" />
+
+    <!-- Shoulder Silhouette -->
+    <path
+        android:fillColor="#1E293B"
+        android:pathData="M37,76 c0,-11 8,-18 17,-18 c9,0 17,7 17,18 z" />
+
+    <!-- Biometric Corner Brackets (Cyan #00D2B4) -->
+    <!-- Top-Left -->
+    <path
+        android:strokeColor="#00D2B4"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M24,24 L24,18 L30,18" />
+    <!-- Top-Right -->
+    <path
+        android:strokeColor="#00D2B4"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M84,24 L84,18 L78,18" />
+    <!-- Bottom-Left -->
+    <path
+        android:strokeColor="#00D2B4"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M24,84 L24,90 L30,90" />
+    <!-- Bottom-Right -->
+    <path
+        android:strokeColor="#00D2B4"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M84,84 L84,90 L78,90" />
+
+    <!-- Camera Studio Flash Star / Aperture Badge (Terracotta #FF6B4A) -->
+    <path
+        android:fillColor="#FF6B4A"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M84,76m-9,0a9,9 0,1,1 18,0a9,9 0,1,1 -18,0" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M84,72 L85,75 L88,76 L85,77 L84,80 L83,77 L80,76 L83,75 Z" />
+</vector>

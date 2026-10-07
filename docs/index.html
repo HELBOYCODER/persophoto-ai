@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PersoPhoto AI — استودیو هوشمند عکس پرسنلی، پاسپورت و لاتاری</title>
+    <style>
+        :root {
+            --bg-dark: #0D1117;
+            --surface: #161B22;
+            --surface-variant: #21262D;
+            --border: #30363D;
+            --cyan: #00D2B4;
+            --cyan-glow: rgba(0, 210, 180, 0.25);
+            --terracotta: #FF6B4A;
+            --text-primary: #F0F6FC;
+            --text-secondary: #8B949E;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 24px 16px;
+        }
+
+        .container {
+            max-width: 1080px;
+            margin: 0 auto;
+        }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, rgba(0, 210, 180, 0.12), rgba(255, 107, 74, 0.08));
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 32px 24px;
+            text-align: center;
+            margin-bottom: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: -50px;
+            width: 160px;
+            height: 160px;
+            background: var(--cyan);
+            filter: blur(90px);
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .app-icon-img {
+            width: 104px;
+            height: 104px;
+            border-radius: 22px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.5), 0 0 20px var(--cyan-glow);
+            margin-bottom: 16px;
+            border: 2px solid var(--cyan);
+        }
+
+        .hero h1 {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .hero p.tagline {
+            font-size: 16px;
+            color: var(--cyan);
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .hero p.desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+            max-width: 680px;
+            margin: 0 auto 24px auto;
+        }
+
+        .badges {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .badge {
+            background: var(--surface-variant);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge.cyan {
+            border-color: var(--cyan);
+            color: var(--cyan);
+            background: rgba(0, 210, 180, 0.1);
+        }
+
+        /* Comparison Section */
+        .section-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-primary);
+        }
+
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 5px;
+            height: 22px;
+            background: var(--cyan);
+            border-radius: 3px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 36px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        }
+
+        .comparison-view {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .comparison-box {
+            flex: 1;
+            min-width: 140px;
+            max-width: 220px;
+            text-align: center;
+        }
+
+        .comparison-box img {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.4);
+            margin-bottom: 8px;
+        }
+
+        .comparison-box.after img {
+            border-color: var(--cyan);
+        }
+
+        .comparison-box p {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        /* Print Sheets Gallery */
+        .sheet-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .sheet-preview-img {
+            width: 100%;
+            max-height: 440px;
+            object-fit: contain;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            margin-top: 14px;
+        }
+
+        /* Standards Matrix Table */
+        .table-wrap {
+            overflow-x: auto;
+            margin-bottom: 36px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: right;
+        }
+
+        th {
+            background: var(--surface-variant);
+            color: var(--cyan);
+            padding: 12px 16px;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        td.bold {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Features List */
+        .feature-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 14px;
+            align-items: flex-start;
+        }
+
+        .feature-icon {
+            background: rgba(0, 210, 180, 0.15);
+            color: var(--cyan);
+            border-radius: 10px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 24px 0;
+            color: var(--text-secondary);
+            font-size: 12px;
+            border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Hero Header -->
+        <header class="hero">
+            <img src="app_icon_512.png" alt="PersoPhoto AI Icon" class="app-icon-img" id="app-icon">
+            <h1>PersoPhoto AI (پِرسو فوتو)</h1>
+            <p class="tagline">استودیو هوشمند طراحی و ادیت عکس پرسنلی، پاسپورت و لاتاری برای اندروید</p>
+            <p class="desc">
+                تولید و ویرایش حرفه‌ای عکس‌های بیومتریک ۳×۴، گذرنامه بین‌المللی ICAO و گرین‌کارت لاتاری آمریکا
+                با حذف هوشمند پس‌زمینه به سفید خالص (#FFFFFF)، تنظیم خودکار نور و رنگ، و تولید برگه‌های چاپی ۶ تایی و ۱۲ تایی ۳۰۰ دی‌پی‌آی.
+            </p>
+
+            <div class="badges">
+                <span class="badge cyan">⚡ هوش مصنوعی محلی ۱۰۰٪ آفلاین</span>
+                <span class="badge">🖼️ پس‌زمینه سفید خالص (#FFF)</span>
+                <span class="badge">💡 تصحیح خودکار نور و رنگ</span>
+                <span class="badge">🖨️ برگه چاپ ۶ تایی (۱۰×۱۵ سانت)</span>
+                <span class="badge">🖨️ برگه چاپ ۱۲ تایی (۱۳×۱۸ سانت)</span>
+                <span class="badge">📄 خروجی عکس ۳۰۰DPI و PDF چاپی</span>
+            </div>
+        </header>
+
+        <!-- Feature 1: Intelligent Photo Editing & Whitening -->
+        <h2 class="section-title">موتور هوشمند ادیت، سفید کردن زمینه و تنظیم نور</h2>
+        <div class="grid-2">
+            <div class="card">
+                <h3 style="font-size: 16px; color: var(--text-primary); margin-bottom: 12px;">مقایسه قبل و بعد از پردازش هوشمند</h3>
+                <div class="comparison-view">
+                    <div class="comparison-box before">
+                        <img src="samples/sample_before_dark_bg.png" alt="عکس خام قبل از ادیت (نور کم و زمینه خاکستری)">
+                        <p>عکس اولیه (نور ناکافی و زمینه خاکستری)</p>
+                    </div>
+                    <div style="font-size: 24px; color: var(--cyan); align-self: center;">←</div>
+                    <div class="comparison-box after">
+                        <img src="samples/sample_after_white_bg.png" alt="عکس بهینه‌شده هوشمند (زمینه سفید خالص و نور استاندارد)">
+                        <p style="color: var(--cyan);">خروجی هوشمند (سفید خالص + نور بیومتریک)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="font-size: 16px; color: var(--text-primary); margin-bottom: 16px;">قابلیت‌های موتور پردازش بیومتریک</h3>
+                <div class="feature-item">
+                    <div class="feature-icon">✨</div>
+                    <div>
+                        <strong style="color: var(--text-primary); font-size: 14px;">سفید کردن دقیق پس‌زمینه (#FFFFFF)</strong>
+                        <p style="color: var(--text-secondary); font-size: 12px;">جداسازی سوژه و موها با تکنیک ماتینگ نرم و حذف سایه‌های دیواری</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">💡</div>
+                    <div>
+                        <strong style="color: var(--text-primary); font-size: 14px;">تنظیم خودکار نوردهی و گاما (Auto Exposure)</strong>
+                        <p style="color: var(--text-secondary); font-size: 12px;">روشن‌سازی ملایم سایه‌های زیر گردن و رفع تاریکی یا پرنوری چهره بر اساس شاخص استاندارد IRE</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🎨</div>
+                    <div>
+                        <strong style="color: var(--text-primary); font-size: 14px;">تراز سفیدی و رنگ پوست (Auto White Balance)</strong>
+                        <p style="color: var(--text-secondary); font-size: 12px;">حذف زردی لامپ رشته‌ای و ایجاد رنگ طبیعی چهره بدون تغییر تناژ واقعی پوست</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📐</div>
+                    <div>
+                        <strong style="color: var(--text-primary); font-size: 14px;">کادربندی خودکار و تراز افقی چشم‌ها</strong>
+                        <p style="color: var(--text-secondary); font-size: 12px;">تشخیص زاویه چرخش سر و چرخش اصلاحی، پوشش ۷۰ تا ۸۰ درصد چهره در کادر</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feature 2: 6-Pack & 12-Pack Print Layout Sheets -->
+        <h2 class="section-title">طرح‌بندی برگه‌های چاپی ۶ تایی و ۱۲ تایی (کاغذ ۱۰×۱۵ و ۱۳×۱۸ سانت)</h2>
+        <div class="grid-2">
+            <!-- 6-Pack Card -->
+            <div class="sheet-card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="font-size: 16px; color: var(--text-primary);">برگه ۶ تایی (کاغذ استاندارد ۱۰×۱۵ سانت / 4x6 اینچ)</h3>
+                    <span class="badge cyan">300 DPI Ultra</span>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 12px; margin-top: 4px;">
+                    مناسب‌ترین برگه برای چاپ در لابراتوار عکاسی و پرینترهای سابلیمیشن خانگی. دارای خطوط برش دقیق راهنمای قیچی.
+                </p>
+                <img src="samples/print_sheet_6pack_10x15cm.jpg" alt="برگه چاپ ۶ تایی ۱۰ در ۱۵ سانتیمتر" class="sheet-preview-img" id="sheet-6pack">
+            </div>
+
+            <!-- 12-Pack Card -->
+            <div class="sheet-card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="font-size: 16px; color: var(--text-primary);">برگه ۱۲ تایی (کاغذ ۱۳×۱۸ سانت یا A4)</h3>
+                    <span class="badge" style="border-color: var(--terracotta); color: var(--terracotta);">تعداد بالا</span>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 12px; margin-top: 4px;">
+                    چیدمان اقتصادی ۱۲ قطعه عکس ۳×۴ یا پاسپورت در یک برگه، همراه با حاشیه‌های استاندارد و نشانگرهای زاویه‌ای برش.
+                </p>
+                <img src="samples/print_sheet_12pack_13x18cm.jpg" alt="برگه چاپ ۱۲ تایی ۱۳ در ۱۸ سانتیمتر" class="sheet-preview-img" id="sheet-12pack">
+            </div>
+        </div>
+
+        <!-- Feature 3: Biometric Standards Matrix -->
+        <h2 class="section-title">جدول استانداردهای بیومتریک و پرسنلی پشتیبانی‌شده</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>نوع مدرک</th>
+                        <th>ابعاد فیزیکی</th>
+                        <th>رزولوشن چاپی (300 DPI)</th>
+                        <th>درصد پوشش چهره</th>
+                        <th>رنگ پس‌زمینه</th>
+                        <th>کاربردها</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="bold">۳×۴ سانتی‌متر (ایران)</td>
+                        <td>۳۰ × ۴۰ میلی‌متر</td>
+                        <td>۳۵۴ × ۴۷۲ پیکسل</td>
+                        <td>۷۰٪ تا ۷۸٪ کادر</td>
+                        <td>سفید یکدست</td>
+                        <td>شناسنامه، کارت ملی، گواهینامه، مدارس و ادارات</td>
+                    </tr>
+                    <tr>
+                        <td class="bold">پاسپورت بین‌المللی (ICAO)</td>
+                        <td>۳۵ × ۴۵ میلی‌متر</td>
+                        <td>۴۱۳ × ۵۳۱ پیکسل</td>
+                        <td>۷۰٪ تا ۸۰٪ (۳۲-۳۶mm)</td>
+                        <td>سفید خالص / خاکستری خنثی</td>
+                        <td>گذرنامه الکترونیک، ترکیه، دبی، استانداردهای فرودگاهی</td>
+                    </tr>
+                    <tr>
+                        <td class="bold">لاتاری و ویزای آمریکا (DV)</td>
+                        <td>۵۰.۸ × ۵۰.۸ میلی‌متر (۲×۲ اینچ)</td>
+                        <td>۶۰۰ × ۶۰۰ تا ۱۲۰۰ × ۱۲۰۰ px</td>
+                        <td>۵۰٪ تا ۶۹٪ (۱ تا ۱.۳۷۵ اینچ)</td>
+                        <td>سفید ساده بدون کوچکترین سایه</td>
+                        <td>ثبت‌نام لاتاری گرین‌کارت، ویزای B1/B2، تحصیلی F1</td>
+                    </tr>
+                    <tr>
+                        <td class="bold">ویزای شنگن (اروپا)</td>
+                        <td>۳۵ × ۴۵ میلی‌متر</td>
+                        <td>۴۱۳ × ۵۳۱ پیکسل</td>
+                        <td>۷۵٪ تا ۸۰٪</td>
+                        <td>سفید بسیار روشن</td>
+                        <td>ویزای ۲۷ کشور عضو پیمان شنگن اتحادیه اروپا</td>
+                    </tr>
+                    <tr>
+                        <td class="bold">ویزای کانادا (IRCC)</td>
+                        <td>۵۰ × ۷۰ میلی‌متر</td>
+                        <td>۵۹۱ × ۸۲۷ پیکسل</td>
+                        <td>۳۱ تا ۳۶ میلی‌متر طول سر</td>
+                        <td>سفید خالص</td>
+                        <td>ویزای توریستی، تحصیلی و اقامت دائم کانادا</td>
+                    </tr>
+                    <tr>
+                        <td class="bold">پرسنلی ۴×۶</td>
+                        <td>۴۰ × ۶۰ میلی‌متر</td>
+                        <td>۴۷۲ × ۷۰۹ پیکسل</td>
+                        <td>۶۵٪ تا ۷۵٪</td>
+                        <td>سفید یا خاکستری</td>
+                        <td>پرونده‌های سازمانی و استخدامی خاص</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <footer>
+            PersoPhoto AI — پِرسو فوتو • توسعه‌یافته با کاتلین، جت‌پک کامپوز و پردازش تصویر بیومتریک • HELBOYCODER
+        </footer>
+    </div>
+</body>
+</html>

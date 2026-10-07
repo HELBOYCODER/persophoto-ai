@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg_dark">#0D1117</color>
+    <color name="surface_dark">#161B22</color>
+    <color name="surface_variant">#21262D</color>
+    <color name="primary_cyan">#00D2B4</color>
+    <color name="secondary_terracotta">#FF6B4A</color>
+    <color name="pure_white">#FFFFFF</color>
+    <color name="text_primary">#F0F6FC</color>
+    <color name="text_secondary">#8B949E</color>
+</resources>
